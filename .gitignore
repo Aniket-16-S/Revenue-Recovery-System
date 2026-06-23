@@ -1,0 +1,46 @@
+# ── Environment & Configuration ─────────────────────────────────────
+.env
+
+*.local
+
+# ── Next.js Frontend ──────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+frontend/.docusaurus/
+frontend/yarn-error.log
+.npm/
+frontend\.next
+# ── Python FastAPI Backend ────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ── Notices / Generator Outputs ────────────────────────────────────
+# Ignore only the top-level generated notices folder, not the frontend pages
+/notices/
+!frontend/src/app/notices/
+*.pdf
+
+# ── OS & IDEs ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+__pycache__

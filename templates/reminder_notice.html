@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reminder Notice - EkamVistar</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+        
+        @page {
+            size: A4;
+            margin: 20mm 15mm 25mm 15mm;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'Outfit', sans-serif;
+                font-size: 10px;
+                color: #64748B;
+            }
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: #1E293B;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #ffffff;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* Header Bar Design */
+        .header-bar {
+            background: linear-gradient(135deg, #1E3A8A, #0F172A);
+            color: #ffffff;
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border-bottom: 4px solid #D97706; /* Gold accent */
+        }
+        
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-table td {
+            border: none;
+            padding: 0;
+            vertical-align: middle;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .logo-subtext {
+            font-size: 11px;
+            font-weight: 400;
+            opacity: 0.8;
+            margin: 2px 0 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-meta {
+            text-align: right;
+            font-size: 10px;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+
+        /* Title Area */
+        .title-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .title-container h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0F172A;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0 0 6px 0;
+        }
+
+        .title-underline {
+            width: 80px;
+            height: 3px;
+            background-color: #D97706;
+            margin: 0 auto;
+        }
+
+        /* Metadata Table */
+        .field-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 12.5px;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .field-table tr:nth-child(even) {
+            background-color: #F8FAFC;
+        }
+
+        .field-table th {
+            background-color: #F1F5F9;
+            color: #475569;
+            font-weight: 600;
+            width: 30%;
+            padding: 8px 12px;
+            border: 1px solid #E2E8F0;
+            text-align: left;
+        }
+
+        .field-table td {
+            color: #0F172A;
+            font-weight: 500;
+            padding: 8px 12px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .highlight-amount {
+            color: #DC2626;
+            font-weight: 700 !important;
+            font-size: 14px;
+        }
+
+        /* Notice Body (supports Markdown elements converted to HTML) */
+        .notice-body {
+            font-size: 13.5px;
+            color: #334155;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            text-align: justify;
+        }
+
+        .notice-body p {
+            margin-top: 0;
+            margin-bottom: 14px;
+        }
+
+        .notice-body strong {
+            color: #0F172A;
+            font-weight: 600;
+        }
+
+        .notice-body h2, .notice-body h3 {
+            color: #1E3A8A;
+            font-weight: 700;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        .notice-body h2 {
+            font-size: 15px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px;
+        }
+
+        .notice-body h3 {
+            font-size: 13.5px;
+        }
+
+        .notice-body ul, .notice-body ol {
+            margin-top: 0;
+            margin-bottom: 14px;
+            padding-left: 20px;
+        }
+
+        .notice-body li {
+            margin-bottom: 6px;
+        }
+
+        /* Signature Block */
+        .signature-block {
+            margin-top: 30px;
+            font-size: 12.5px;
+            color: #475569;
+            line-height: 1.5;
+            page-break-inside: avoid;
+        }
+
+        /* Footer Watermark */
+        .footer-watermark {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 12px;
+            font-size: 11px;
+            color: #64748B;
+        }
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer-table td {
+            border: none;
+            padding: 0;
+            vertical-align: middle;
+        }
+
+        .badge-pending {
+            background-color: #FFFBEB;
+            color: #D97706;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            border: 1px solid #FDE68A;
+            display: inline-block;
+            font-size: 9.5px;
+        }
+        
+        .footer-text {
+            text-align: right;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header bar -->
+    <div class="header-bar">
+        <table class="header-table">
+            <tr>
+                <td>
+                    <div class="logo-text">EkamVistar</div>
+                    <div class="logo-subtext">Municipal Revenue Department</div>
+                </td>
+                <td class="header-meta">
+                    Reference: RT-{{ defaulter.property_id }}<br>
+                    Generated: {{ today_date }}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Title -->
+    <div class="title-container">
+        <h1>Reminder Notice</h1>
+        <div class="title-underline"></div>
+    </div>
+
+    <!-- Field Table -->
+    <table class="field-table">
+        <tr>
+            <th>Property ID</th>
+            <td>{{ defaulter.property_id }}</td>
+            <th>Owner Name</th>
+            <td>{{ defaulter.owner_name }}</td>
+        </tr>
+        <tr>
+            <th>Ward ID / Name</th>
+            <td>Ward {{ defaulter.ward_id }}</td>
+            <th>Property Type</th>
+            <td>{{ defaulter.property_type }}</td>
+        </tr>
+        <tr>
+            <th>Total Outstanding</th>
+            <td class="highlight-amount">{{ formatted_outstanding }}</td>
+            <th>Payment Due Date</th>
+            <td><strong>{{ due_date }}</strong> (in 30 days)</td>
+        </tr>
+    </table>
+
+    <!-- Dynamic Notice Body (Markdown parsed to HTML) -->
+    <div class="notice-body">
+        {{ notice_body | safe }}
+    </div>
+
+    <!-- Sign-off Block (rendered only if not already in LLM body) -->
+    {% if not has_custom_signoff %}
+    <div class="signature-block">
+        <p>
+            Property Tax Department<br>
+            <strong>Municipal Corporation of Maharashtra.</strong><br>
+            <span style="font-size: 11px; color: #94A3B8;">Notice signed digitally.</span>
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Footer fixed at bottom -->
+    <div class="footer-watermark">
+        <table class="footer-table">
+            <tr>
+                <td>
+                    <span class="badge-pending">Officer Approval Pending</span>
+                </td>
+                <td class="footer-text">
+                    This document is a system-generated preview. Final dispatch requires officer authorization.
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>
