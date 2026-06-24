@@ -44,3 +44,4 @@ Thumbs.db
 *.sln
 *.sw?
 __pycache__
+temp/defaulters.csv
