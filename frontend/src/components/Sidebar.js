@@ -10,6 +10,9 @@ import {
   Search,
   MapPin,
   Building2,
+  Bot,
+  Users,
+  LogOut,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -17,11 +20,14 @@ const NAV_ITEMS = [
   { href: "/notices", label: "AI Notices", icon: BrainCircuit },
   { href: "/explorer", label: "Data Explorer", icon: Search },
   { href: "/wards", label: "Ward Analytics", icon: MapPin },
+  { href: "/ai-assistant", label: "AI Assistant", icon: Bot },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isBackendOnline, setIsBackendOnline] = useState(true);
+  const [userRole, setUserRole] = useState("user");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const checkBackend = async () => {
@@ -37,9 +43,21 @@ export default function Sidebar() {
       }
     };
 
+    const handleAuth = () => {
+      setUserRole(localStorage.getItem("userRole") || "user");
+      setUsername(localStorage.getItem("username") || "");
+    };
+
     checkBackend();
-    const interval = setInterval(checkBackend, 5000);
-    return () => clearInterval(interval);
+    handleAuth();
+
+    const interval = setInterval(checkBackend, 60_000); // once per minute
+    window.addEventListener("auth-change", handleAuth);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("auth-change", handleAuth);
+    };
   }, []);
 
   return (
@@ -57,35 +75,55 @@ export default function Sidebar() {
 
       {/* ── Navigation ─────────────────────────────────────────── */}
       <nav className="sidebar__nav">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+        {(() => {
+          const displayItems = [...NAV_ITEMS];
+          if (userRole === "admin") {
+            displayItems.push({ href: "/manage-users", label: "Manage Users", icon: Users });
+          }
+          return displayItems.map(({ href, label, icon: Icon }) => {
+            const isActive =
+              href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`sidebar__link ${isActive ? "sidebar__link--active" : ""}`}
-              style={{ position: "relative" }}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="active-nav-bg"
-                  className="sidebar__link-bg"
-                  transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                />
-              )}
-              <Icon size={18} style={{ zIndex: 2, marginRight: "10px" }} />
-              <span style={{ zIndex: 2 }}>{label}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`sidebar__link ${isActive ? "sidebar__link--active" : ""}`}
+                style={{ position: "relative" }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-nav-bg"
+                    className="sidebar__link-bg"
+                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                  />
+                )}
+                <Icon size={18} style={{ zIndex: 2, marginRight: "10px" }} />
+                <span style={{ zIndex: 2 }}>{label}</span>
+              </Link>
+            );
+          });
+        })()}
       </nav>
 
       {/* ── Footer ─────────────────────────────────────────────── */}
-      <div className="sidebar__footer">
-        <div className={`sidebar__footer-dot ${isBackendOnline ? "sidebar__footer-dot--online" : "sidebar__footer-dot--offline"}`} />
-        <span>{isBackendOnline ? "System Online" : "Backend Offline"}</span>
+      <div className="sidebar__footer" style={{ flexDirection: "column", gap: "14px", alignItems: "stretch" }}>
+        {username && (
+          <button
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+            className="sidebar__logout-btn"
+          >
+            <LogOut size={16} />
+            <span>Log Out ({username})</span>
+          </button>
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
+          <div className={`sidebar__footer-dot ${isBackendOnline ? "sidebar__footer-dot--online" : "sidebar__footer-dot--offline"}`} />
+          <span>{isBackendOnline ? "System Online" : "Backend Offline"}</span>
+        </div>
       </div>
 
       <style jsx>{`
@@ -228,6 +266,35 @@ export default function Sidebar() {
             opacity: 0.4;
             transform: scale(1.25);
           }
+        }
+
+        .sidebar__logout-btn {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          padding: 10px 14px;
+          background: rgba(239, 68, 68, 0.08);
+          border: 1px solid rgba(239, 68, 68, 0.15);
+          border-radius: var(--radius-md);
+          color: #fca5a5;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--transition-base);
+          width: 100%;
+          justify-content: center;
+          margin-bottom: 2px;
+        }
+
+        .sidebar__logout-btn:hover {
+          background: rgba(239, 68, 68, 0.18);
+          color: white;
+          border-color: rgba(239, 68, 68, 0.35);
+          transform: translateY(-1px);
+        }
+        
+        .sidebar__logout-btn:active {
+          transform: translateY(0);
         }
 
         @media (max-width: 768px) {

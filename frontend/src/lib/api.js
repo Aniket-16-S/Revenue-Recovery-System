@@ -141,6 +141,79 @@ export function generateNoticeStream(propertyId, noticeType, onToken, onDone, on
 }
 
 /* ------------------------------------------------------------------ */
+/* AI Assistant — streaming chat                                        */
+/* ------------------------------------------------------------------ */
+/**
+ * Stream a chat message to the AI agent.
+ *
+ * SSE events carry JSON payloads:
+ *   { type: "status", text: "..." }  — status update while agent works
+ *   { type: "token",  text: "..." }  — chunk of the final answer
+ *   { type: "done" }                 — stream finished
+ *   { type: "error",  text: "..." }  — an error occurred
+ *
+ * @param {string}   sessionId  - client-generated UUID for conversation history
+ * @param {string}   message    - user message
+ * @param {Function} onStatus   - called with status text strings
+ * @param {Function} onToken    - called with answer text chunks
+ * @param {Function} onDone     - called when stream is complete
+ * @param {Function} onError    - called with an Error on failure
+ * @returns {AbortController}   - call .abort() to cancel
+ */
+export function streamAIChat(sessionId, message, onStatus, onToken, onDone, onError) {
+  const controller = new AbortController();
+
+  fetch(`${BASE}/ai/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, session_id: sessionId }),
+    signal: controller.signal,
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || "AI chat request failed");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data:")) continue;
+          const raw = line.startsWith("data: ") ? line.slice(6) : line.slice(5);
+          if (!raw.trim()) continue;
+
+          try {
+            const event = JSON.parse(raw);
+            if (event.type === "status" && onStatus) onStatus(event.text);
+            else if (event.type === "token" && onToken) onToken(event.text);
+            else if (event.type === "done") { if (onDone) onDone(); return; }
+            else if (event.type === "error" && onError) onError(new Error(event.text));
+          } catch (_) {
+            // ignore parse errors on individual lines
+          }
+        }
+      }
+
+      if (onDone) onDone();
+    })
+    .catch((err) => {
+      if (err.name !== "AbortError" && onError) onError(err);
+    });
+
+  return controller;
+}
+
+/* ------------------------------------------------------------------ */
 /* Utility: format Indian currency (lakhs / crores)                     */
 /* ------------------------------------------------------------------ */
 export function formatCurrency(amount) {
@@ -156,3 +229,25 @@ export function formatFullCurrency(amount) {
   if (amount == null) return "₹0";
   return `₹${Number(amount).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
+
+/* ------------------------------------------------------------------ */
+/* Notices — send notice email                                           */
+/* ------------------------------------------------------------------ */
+export async function sendNoticeEmail(propertyId, email, content, subject) {
+  const res = await fetch(`${BASE}/notices/send-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      property_id: Number(propertyId),
+      email: email,
+      content: content,
+      subject: subject || "Property Tax Notice",
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to send email");
+  }
+  return res.json();
+}
+

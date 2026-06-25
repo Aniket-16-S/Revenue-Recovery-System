@@ -1230,3 +1230,105 @@ textarea {
 .z-10 {
   z-index: 10;
 }
+
+/* ================================================================== */
+/* Markdown Rendering Styles                                          */
+/* ================================================================== */
+.markdown-content, .msg-markdown {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+.markdown-content p, .msg-markdown p {
+  margin: 0 0 8px 0;
+}
+.markdown-content p:last-child, .msg-markdown p:last-child {
+  margin-bottom: 0;
+}
+.markdown-content h1, .msg-markdown h1,
+.markdown-content h2, .msg-markdown h2,
+.markdown-content h3, .msg-markdown h3 {
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--text-primary);
+}
+.markdown-content h1, .msg-markdown h1 { font-size: 1.35rem; }
+.markdown-content h2, .msg-markdown h2 { font-size: 1.15rem; }
+.markdown-content h3, .msg-markdown h3 { font-size: 1rem; color: var(--accent-cyan); }
+.markdown-content strong, .msg-markdown strong { font-weight: 700; color: var(--text-primary); }
+.markdown-content em, .msg-markdown em     { font-style: italic; color: var(--text-secondary); }
+
+.markdown-content ul, .msg-markdown ul,
+.markdown-content ol, .msg-markdown ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+.markdown-content li, .msg-markdown li {
+  margin: 4px 0;
+}
+.markdown-content ul, .msg-markdown ul {
+  list-style-type: disc;
+}
+.markdown-content ol, .msg-markdown ol {
+  list-style-type: decimal;
+}
+
+.markdown-content code, .msg-markdown code {
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--accent-cyan);
+}
+.markdown-content pre, .msg-markdown pre {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.markdown-content pre code, .msg-markdown pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent-emerald);
+  font-size: 12.5px;
+}
+.markdown-content table, .msg-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+.markdown-content th, .msg-markdown th {
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px solid var(--glass-border);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+.markdown-content td, .msg-markdown td {
+  border: 1px solid var(--glass-border);
+  padding: 8px 12px;
+}
+.markdown-content tr:nth-child(even) td, .msg-markdown tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+.markdown-content blockquote, .msg-markdown blockquote {
+  border-left: 3px solid var(--accent-cyan);
+  margin: 12px 0;
+  padding: 6px 16px;
+  color: var(--text-secondary);
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.01);
+}
+.markdown-content a, .msg-markdown a {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

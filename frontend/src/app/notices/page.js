@@ -14,6 +14,7 @@ import {
   fetchNoticeContent,
   fetchDefaulterById,
   formatFullCurrency,
+  sendNoticeEmail,
 } from "@/lib/api";
 
 const NOTICE_TYPES = ["Reminder", "Payment Due", "Final Demand"];
@@ -27,6 +28,12 @@ export default function NoticesPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [defaulterInfo, setDefaulterInfo] = useState(null);
+
+  // Email States
+  const [defaulterEmail, setDefaulterEmail] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   // History
   const [notices, setNotices] = useState([]);
@@ -71,6 +78,9 @@ export default function NoticesPage() {
     if (!propertyId || streaming) return;
     setError("");
     setStreamedText("");
+    setDefaulterEmail("");
+    setEmailSuccess("");
+    setEmailError("");
     setStreaming(true);
 
     const controller = generateNoticeStream(
@@ -99,14 +109,53 @@ export default function NoticesPage() {
     streamRef.current = controller;
   }, [propertyId, noticeType, streaming]);
 
+  /* ── Send Email ────────────────────────────────────────────────── */
+  async function handleSendEmail() {
+    if (!defaulterEmail || !streamedText) return;
+    setSendingEmail(true);
+    setEmailSuccess("");
+    setEmailError("");
+    try {
+      await sendNoticeEmail(
+        propertyId,
+        defaulterEmail,
+        streamedText,
+        `Property Tax Notice (${noticeType}) - Property #${propertyId}`
+      );
+      setEmailSuccess("Email sent successfully!");
+    } catch (err) {
+      const errMsg = err.message || "Failed to send email";
+      setEmailError(errMsg);
+      // Browser popup alert for exception
+      alert(`Error sending email: ${errMsg}`);
+    } finally {
+      setSendingEmail(false);
+    }
+  }
+
   /* ── View a saved notice ───────────────────────────────────────── */
   async function viewNotice(notice) {
     setSelectedNotice(notice);
+    setPropertyId(String(notice.property_id));
+    setStreamedText("");
+    setError("");
+    setDefaulterEmail("");
+    setEmailSuccess("");
+    setEmailError("");
+    setStreaming(false);
+
     try {
       const data = await fetchNoticeContent(notice.property_id);
-      setSelectedContent(data?.content || "");
-    } catch {
-      setSelectedContent("Failed to load notice content.");
+      setStreamedText(data?.content || "");
+    } catch (err) {
+      setError("Failed to load notice content.");
+    }
+
+    try {
+      const info = await fetchDefaulterById(notice.property_id);
+      setDefaulterInfo(info);
+    } catch (err) {
+      setDefaulterInfo(null);
     }
   }
 
@@ -286,6 +335,74 @@ export default function NoticesPage() {
               )}
               {streaming && <span className="streaming-cursor" />}
             </div>
+
+            {/* Email dispatch section */}
+            {streamedText && !streaming && (
+              <div
+                style={{
+                  borderTop: "1px solid var(--glass-border)",
+                  paddingTop: "var(--space-md)",
+                  marginTop: "var(--space-md)",
+                }}
+              >
+                <label
+                  className="filter-group__label"
+                  style={{ marginBottom: 8, display: "block" }}
+                >
+                  Enter Defaulter Email
+                </label>
+                <div className="flex gap-sm">
+                  <input
+                    type="email"
+                    className="input"
+                    placeholder="e.g., defaulter@domain.com"
+                    value={defaulterEmail}
+                    onChange={(e) => {
+                      setDefaulterEmail(e.target.value);
+                      setEmailSuccess("");
+                      setEmailError("");
+                    }}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    className="btn btn--primary"
+                    onClick={handleSendEmail}
+                    disabled={sendingEmail || !defaulterEmail}
+                    style={{ whiteSpace: "nowrap", display: "flex", alignItems: "center" }}
+                  >
+                    {sendingEmail ? (
+                      <>
+                        <Loader2 size={14} className="spinning" style={{ marginRight: 6 }} />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={14} style={{ marginRight: 6 }} />
+                        Send
+                      </>
+                    )}
+                  </button>
+                </div>
+                {emailError && (
+                  <div
+                    className="flex items-center gap-sm mt-sm"
+                    style={{ color: "var(--accent-red)", fontSize: 13, marginTop: 8 }}
+                  >
+                    <AlertCircle size={14} />
+                    <span>{emailError}</span>
+                  </div>
+                )}
+                {emailSuccess && (
+                  <div
+                    className="flex items-center gap-sm mt-sm"
+                    style={{ color: "#10b981", fontSize: 13, marginTop: 8 }}
+                  >
+                    <Check size={14} />
+                    <span>{emailSuccess}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -350,45 +467,6 @@ export default function NoticesPage() {
                 ))
               )}
             </div>
-
-            {/* Selected notice content */}
-            {selectedNotice && selectedContent && (
-              <div
-                style={{
-                  borderTop: "1px solid var(--glass-border)",
-                  padding: "var(--space-md) var(--space-lg)",
-                  maxHeight: 300,
-                  overflowY: "auto",
-                }}
-              >
-                <div className="flex justify-between items-center mb-md">
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>
-                    Property #{selectedNotice.property_id}
-                  </span>
-                  <div className="flex gap-sm">
-                    <button
-                      className="btn btn--ghost btn--sm"
-                      onClick={() => handleCopy(selectedContent)}
-                      title="Copy Markdown"
-                    >
-                      {copied ? <Check size={14} /> : <Copy size={14} />}
-                    </button>
-                    <button
-                      className="btn btn--ghost btn--sm"
-                      onClick={() => handleDownloadPdf(selectedNotice.property_id)}
-                      title="Download PDF"
-                    >
-                      <Download size={14} />
-                    </button>
-                  </div>
-                </div>
-                <div className="markdown-content" style={{ fontSize: 13 }}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {selectedContent}
-                  </ReactMarkdown>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

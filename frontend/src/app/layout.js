@@ -1,6 +1,7 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import AuthWrapper from "@/components/AuthWrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "Revenue Recovery System — Government of Maharashtra",
+  title: "Revenue Recovery System, Government of Maharashtra",
   description:
     "AI-powered property tax defaulter management and revenue recovery dashboard for the Government of Maharashtra. Monitor KPIs, generate notices, and analyze ward-level data.",
   keywords: "revenue recovery, property tax, Maharashtra, defaulters, dashboard",
@@ -33,8 +34,10 @@ export default function RootLayout({ children }) {
         </div>
 
         <div className="app-layout">
-          <Sidebar />
-          <main className="main-content relative z-10">{children}</main>
+          <AuthWrapper>
+            <Sidebar />
+            <main className="main-content relative z-10">{children}</main>
+          </AuthWrapper>
         </div>
       </body>
     </html>

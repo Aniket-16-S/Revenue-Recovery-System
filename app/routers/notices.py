@@ -25,6 +25,7 @@ from app.database import get_db
 from app.notice_generator import VALID_NOTICE_TYPES, stream_notice, generate_notice
 from app.services import defaulter_service
 from pdf_generator import render_notice
+from app.services.email_service import send_notice_email
 
 router = APIRouter(prefix="/notices", tags=["Notices"])
 
@@ -221,3 +222,33 @@ async def download_notice_pdf(
             "Content-Disposition": f"attachment; filename=Reminder_Notice_{property_id}.pdf"
         },
     )
+
+
+# ------------------------------------------------------------------ #
+# POST /notices/send-email                                            #
+# ------------------------------------------------------------------ #
+class SendEmailRequest(BaseModel):
+    property_id: int
+    email: str
+    content: str
+    subject: str = "Property Tax Notice"
+
+
+@router.post(
+    "/send-email",
+    summary="Send generated notice via email",
+    description="Sends the notice content to the specified email address.",
+)
+async def send_email_endpoint(body: SendEmailRequest):
+    try:
+        await send_notice_email(
+            to_email=body.email,
+            subject=body.subject,
+            content=body.content
+        )
+        return {"status": "success", "message": "Email sent successfully"}
+    except ValueError as val_err:
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(exc)}")
+

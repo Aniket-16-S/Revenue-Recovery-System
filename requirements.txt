@@ -5,12 +5,13 @@ sqlalchemy[asyncio]>=2.0.30
 asyncpg>=0.29.0
 pydantic>=2.7.0
 
-# LLM notice generation
+# LLM notice generation & AI Agent
 python-dotenv>=1.0.0
 langchain-core>=0.3.0
 langchain-google-genai>=2.1.0
 langchain-groq>=0.3.0
 sse-starlette>=2.0.0
+langgraph>=0.2.0
 
 # Data generation (kept intact)
 psycopg2-binary>=2.9.9
