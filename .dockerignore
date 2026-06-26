@@ -1,0 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE and system files
+.git
+.github
+.gitignore
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project files and folders
+notices/
+temp/
+docs/
+*.md
+
+# Frontend build artifacts (to avoid copying large node_modules/next build folder to backend build context)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/yarn.lock
+frontend/package-lock.json
+frontend/.env.local

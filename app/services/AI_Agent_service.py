@@ -114,7 +114,7 @@ def _build_llm():
             # gemini-3-flash-lite-preview
             # gemini-3.1-flash-lite
             
-            model="gemini-2.0-flash",
+            model="gemini-2.0-flash-lite",
             google_api_key=gemini_key,
             temperature=0.3,
         )

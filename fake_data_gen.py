@@ -36,9 +36,11 @@ def export_defaulters_to_csv(conn, filepath="temp/defaulters.csv"):
 # ==========================================
 
 NUM_ROWS = 500        # Change this to any number
-DB_NAME = "postgres"
-DB_USER = "postgres"
-DB_HOST = "localhost"
+DB_NAME = os.getenv("DB_NAME", "postgres")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_PORT = os.getenv("DB_PORT", "5432")
 
 # ==========================================
 # CONNECT
@@ -47,7 +49,9 @@ DB_HOST = "localhost"
 conn = psycopg2.connect(
     host=DB_HOST,
     database=DB_NAME,
-    user=DB_USER
+    user=DB_USER,
+    password=DB_PASSWORD,
+    port=DB_PORT
 )
 
 cur = conn.cursor()
