@@ -197,19 +197,24 @@ export default function NoticesPage() {
               Property ID
             </label>
             <div className="flex gap-sm">
-              <input
-                type="number"
-                className="input"
-                placeholder="Enter property ID (e.g., 18)"
-                value={propertyId}
-                onChange={(e) => {
-                  setPropertyId(e.target.value);
-                  setError("");
-                  setDefaulterInfo(null);
-                }}
-                onBlur={lookupDefaulter}
-                onKeyDown={(e) => e.key === "Enter" && lookupDefaulter()}
-              />
+              <div className="input-wrapper">
+                <span className="input-prefix">
+                  <FileText size={14} />
+                </span>
+                <input
+                  type="number"
+                  className="input-field"
+                  placeholder="Enter property ID (e.g., 18)"
+                  value={propertyId}
+                  onChange={(e) => {
+                    setPropertyId(e.target.value);
+                    setError("");
+                    setDefaulterInfo(null);
+                  }}
+                  onBlur={lookupDefaulter}
+                  onKeyDown={(e) => e.key === "Enter" && lookupDefaulter()}
+                />
+              </div>
               <button
                 className="btn btn--secondary btn--sm"
                 onClick={lookupDefaulter}

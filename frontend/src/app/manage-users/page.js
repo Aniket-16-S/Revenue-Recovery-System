@@ -9,6 +9,8 @@ import {
   ShieldAlert,
   Check,
   AlertCircle,
+  User,
+  Lock,
 } from "lucide-react";
 
 export default function ManageUsersPage() {
@@ -250,34 +252,44 @@ export default function ManageUsersPage() {
             <form onSubmit={handleAddUser} className="user-form">
               <div className="input-group">
                 <label className="input-label">Username</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="e.g., john_doe"
-                  value={newUsername}
-                  onChange={(e) => {
-                    setNewUsername(e.target.value);
-                    setFormError("");
-                    setFormSuccess("");
-                  }}
-                  required
-                />
+                <div className="input-wrapper">
+                  <span className="input-prefix">
+                    <User size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="e.g., john_doe"
+                    value={newUsername}
+                    onChange={(e) => {
+                      setNewUsername(e.target.value);
+                      setFormError("");
+                      setFormSuccess("");
+                    }}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="input-group">
                 <label className="input-label">Password</label>
-                <input
-                  type="password"
-                  className="input"
-                  placeholder="Enter user password"
-                  value={newPassword}
-                  onChange={(e) => {
-                    setNewPassword(e.target.value);
-                    setFormError("");
-                    setFormSuccess("");
-                  }}
-                  required
-                />
+                <div className="input-wrapper">
+                  <span className="input-prefix">
+                    <Lock size={14} />
+                  </span>
+                  <input
+                    type="password"
+                    className="input-field"
+                    placeholder="Enter user password"
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      setFormError("");
+                      setFormSuccess("");
+                    }}
+                    required
+                  />
+                </div>
               </div>
 
               {formError && (
@@ -362,17 +374,22 @@ export default function ManageUsersPage() {
 
                       {/* Recover Password email section */}
                       <div className="recovery-section">
-                        <div className="flex gap-sm">
-                          <input
-                            type="email"
-                            className="input input--sm"
-                            placeholder="Recover email (e.g. user@mail.com)"
-                            value={recoveryEmails[username] || ""}
-                            onChange={(e) =>
-                              handleEmailChange(username, e.target.value)
-                            }
-                            style={{ flex: 1, fontSize: "12px" }}
-                          />
+                        <div className="flex gap-sm items-center mt-md" style={{ marginTop: "10px" }}>
+                          <div className="input-wrapper" style={{ flex: 1 }}>
+                            <span className="input-prefix" style={{ padding: "0 8px" }}>
+                              <Mail size={12} />
+                            </span>
+                            <input
+                              type="email"
+                              className="input-field"
+                              placeholder="Recover email (e.g. user@mail.com)"
+                              value={recoveryEmails[username] || ""}
+                              onChange={(e) =>
+                                handleEmailChange(username, e.target.value)
+                              }
+                              style={{ fontSize: "12px", padding: "6px 10px" }}
+                            />
+                          </div>
                           <button
                             className="btn btn--secondary btn--sm"
                             onClick={() => handleSendRecoveryMail(username)}

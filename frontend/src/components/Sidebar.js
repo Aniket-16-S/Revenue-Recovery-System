@@ -61,116 +61,164 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="sidebar">
-      {/* ── Brand ──────────────────────────────────────────────── */}
-      <div className="sidebar__brand">
-        <div className="sidebar__logo">
-          <Building2 size={28} />
-        </div>
-        <div className="sidebar__brand-text">
-          <span className="sidebar__title">Revenue Recovery</span>
-          <span className="sidebar__subtitle">Govt. of Maharashtra</span>
-        </div>
+    <header className="navbar">
+      {/* Top Tricolor line */}
+      <div className="navbar__tricolor">
+        <div className="navbar__blue-line" />
+        <div className="navbar__flag-line" />
       </div>
 
-      {/* ── Navigation ─────────────────────────────────────────── */}
-      <nav className="sidebar__nav">
-        {(() => {
-          const displayItems = [...NAV_ITEMS];
-          if (userRole === "admin") {
-            displayItems.push({ href: "/manage-users", label: "Manage Users", icon: Users });
-          }
-          return displayItems.map(({ href, label, icon: Icon }) => {
-            const isActive =
-              href === "/" ? pathname === "/" : pathname.startsWith(href);
+      <div className="navbar__container">
+        {/* ── Brand Section ── */}
+        <div className="navbar__brand">
+          <div className="navbar__logo">
+            <Building2 size={20} />
+          </div>
+          <div className="navbar__brand-text">
+            <span className="navbar__title">महसूल विभाग, महाराष्ट्र शासन</span>
+            <span className="navbar__subtitle">Revenue Recovery System</span>
+          </div>
+        </div>
 
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`sidebar__link ${isActive ? "sidebar__link--active" : ""}`}
-                style={{ position: "relative" }}
+        {/* ── Navigation Links ── */}
+        <nav className="navbar__nav">
+          {(() => {
+            const displayItems = [...NAV_ITEMS];
+            if (userRole === "admin") {
+              displayItems.push({ href: "/manage-users", label: "Manage Users", icon: Users });
+            }
+            return displayItems.map(({ href, label, icon: Icon }) => {
+              const isActive =
+                href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`navbar__link ${isActive ? "navbar__link--active" : ""}`}
+                  style={{ position: "relative" }}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-navbar-bg"
+                      className="navbar__link-bg"
+                      transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                    />
+                  )}
+                  <span className="navbar__link-icon">
+                    <Icon size={16} />
+                  </span>
+                  <span className="navbar__link-text">{label}</span>
+                </Link>
+              );
+            });
+          })()}
+        </nav>
+
+        {/* ── Health & User Session ── */}
+        <div className="navbar__user-section">
+          <div className="navbar__status" title={isBackendOnline ? "System Online" : "System Offline"}>
+            <div className={`navbar__status-dot ${isBackendOnline ? "navbar__status-dot--online" : "navbar__status-dot--offline"}`} />
+            <span>{isBackendOnline ? "Online" : "Offline"}</span>
+          </div>
+
+          {username && (
+            <div className="navbar__user-info">
+              <span className="navbar__username">{username}</span>
+              <button
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                className="navbar__logout-btn"
+                title="Log Out of system"
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="active-nav-bg"
-                    className="sidebar__link-bg"
-                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                  />
-                )}
-                <Icon size={18} style={{ zIndex: 2, marginRight: "10px" }} />
-                <span style={{ zIndex: 2 }}>{label}</span>
-              </Link>
-            );
-          });
-        })()}
-      </nav>
-
-      {/* ── Footer ─────────────────────────────────────────────── */}
-      <div className="sidebar__footer" style={{ flexDirection: "column", gap: "14px", alignItems: "stretch" }}>
-        {username && (
-          <button
-            onClick={() => {
-              localStorage.clear();
-              window.location.reload();
-            }}
-            className="sidebar__logout-btn"
-          >
-            <LogOut size={16} />
-            <span>Log Out ({username})</span>
-          </button>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
-          <div className={`sidebar__footer-dot ${isBackendOnline ? "sidebar__footer-dot--online" : "sidebar__footer-dot--offline"}`} />
-          <span>{isBackendOnline ? "System Online" : "Backend Offline"}</span>
+                <LogOut size={13} />
+                <span>Log Out</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       <style jsx>{`
-        .sidebar {
+        .navbar {
           position: fixed;
           top: 0;
           left: 0;
-          width: var(--sidebar-width);
-          height: 100vh;
+          right: 0;
+          height: var(--header-height);
           background: #ffffff;
-          border-right: 2px solid #cbd5e1;
+          border-bottom: 2px solid #cbd5e1;
           display: flex;
           flex-direction: column;
-          z-index: 100;
-          padding: var(--space-lg) 0;
+          z-index: 1000;
+          box-shadow: var(--shadow-sm);
         }
 
-        .sidebar__brand {
+        .navbar__tricolor {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+        }
+
+        .navbar__blue-line {
+          height: 2px;
+          background: #0b3c5d;
+          width: 100%;
+        }
+
+        .navbar__flag-line {
+          height: 6px;
+          background: linear-gradient(
+            to right,
+            #ff9933 0%,
+            rgba(255, 255, 255, 0) 30%,
+            rgba(200, 200, 255, 0.9) 50%,
+            rgba(255, 255, 255, 0) 70%,
+            #128807 100%
+          );
+          width: 100%;
+        }
+
+        .navbar__container {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex: 1;
+          padding: 0 var(--space-xl);
+          width: 100%;
+          gap: var(--space-md);
+        }
+
+        .navbar__brand {
           display: flex;
           align-items: center;
           gap: var(--space-sm);
-          padding: 0 var(--space-md);
-          margin-bottom: var(--space-xl);
-          border-bottom: 2px solid #cbd5e1;
-          padding-bottom: var(--space-md);
+          flex: 1;
+          justify-content: flex-start;
         }
 
-        .sidebar__logo {
-          width: 38px;
-          height: 38px;
+        .navbar__logo {
+          width: 48px;
+          height: 48px;
           border-radius: var(--radius-sm);
           background: var(--accent-cyan);
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
-          flex-shrink: 0;
           border: 1px solid #cbd5e1;
         }
 
-        .sidebar__brand-text {
+        .navbar__brand-text {
           display: flex;
           flex-direction: column;
+          text-align: left;
         }
 
-        .sidebar__title {
-          font-size: 13px;
+        .navbar__title {
+          font-size: 18px;
           font-weight: 700;
           color: var(--accent-cyan);
           letter-spacing: 0.01em;
@@ -178,81 +226,128 @@ export default function Sidebar() {
           line-height: 1.2;
         }
 
-        .sidebar__subtitle {
-          font-size: 11px;
+        .navbar__subtitle {
+          font-size: 13px;
           color: var(--accent-orange);
           font-weight: 700;
           text-transform: uppercase;
           line-height: 1.2;
-          margin-top: 2px;
+          margin-top: 5px;
         }
 
-        .sidebar__nav {
-          flex: 1;
+        .navbar__nav {
           display: flex;
-          flex-direction: column;
-          gap: 6px;
-          padding: 0 var(--space-sm);
+          gap: 30px;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          flex: 1;
         }
 
-        .sidebar__link {
+        .navbar__link {
           display: flex;
           align-items: center;
-          padding: 11px var(--space-md);
           border-radius: var(--radius-sm);
           color: var(--text-secondary);
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 600;
+          text-decoration: none;
           position: relative;
           transition: all var(--transition-base);
-          text-decoration: none;
+          height: 38px;
+          // background: #f8fafc;
+          // border: 1px solid #e2e8f0;
+          overflow: hidden;
         }
 
-        .sidebar__link:hover {
-          background: #f1f5f9;
-          color: var(--accent-cyan);
-          transform: translateX(4px);
-        }
-
-        :global(.sidebar__link-bg) {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          background: #e0f2fe;
-          border-left: 4px solid var(--accent-cyan);
-          border-radius: var(--radius-sm);
-          z-index: 1;
-        }
-
-        .sidebar__link--active {
-          color: #0369a1;
-        }
-
-        .sidebar__footer {
-          padding: var(--space-md) var(--space-md);
+        .navbar__link-icon {
           display: flex;
           align-items: center;
-          gap: var(--space-sm);
-          font-size: 12px;
-          color: var(--text-secondary);
-          border-top: 1px solid #cbd5e1;
+          justify-content: center;
+          padding: 7px 12px;
+          height: 100%;
+          // border-right: 1px solid #e2e8f0;
+          transition: all var(--transition-base);
+          position: relative;
+          z-index: 2;
         }
 
-        .sidebar__footer-dot {
+        .navbar__link-text {
+          padding: 0 14px;
+          position: relative;
+          z-index: 2;
+        }
+
+        .navbar__link:hover {
+          background: #e2e8f0;
+          border-color: #cbd5e1;
+          color: var(--accent-cyan);
+        }
+
+        .navbar__link:hover .navbar__link-icon {
+          background: #cbd5e1;
+          border-right-color: #cbd5e1;
+        }
+
+        /* Span and SVG z-index is set to 2 to display on top of absolutely positioned navbar__link-bg */
+        .navbar__link :global(span),
+        .navbar__link :global(svg) {
+          position: relative;
+          z-index: 2;
+        }
+
+        :global(.navbar__link-bg) {
+          position: absolute;
+          inset: 0;
+          background: rgba(14, 165, 233, 0.12);
+          border-bottom: 2px solid var(--accent-cyan);
+          border-radius: var(--radius-sm);
+          z-index: 1;
+          pointer-events: none;
+        }
+
+        .navbar__link--active {
+          color: #0369a1 !important;
+          border-color: #bae6fd !important;
+          background: rgba(224, 242, 254, 0.5) !important;
+        }
+
+        .navbar__link--active .navbar__link-icon {
+          background: rgba(186, 230, 253, 0.4);
+          border-right-color: #bae6fd;
+        }
+
+        .navbar__user-section {
+          display: flex;
+          align-items: center;
+          gap: var(--space-md);
+          flex: 1;
+          justify-content: flex-end;
+        }
+
+        .navbar__status {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          color: var(--text-tertiary);
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+
+        .navbar__status-dot {
           width: 8px;
           height: 8px;
           border-radius: 50%;
           animation: pulse 2s ease-in-out infinite;
         }
 
-        .sidebar__footer-dot--online {
+        .navbar__status-dot--online {
           background: #16a34a;
           box-shadow: 0 0 4px rgba(22, 163, 74, 0.3);
         }
 
-        .sidebar__footer-dot--offline {
+        .navbar__status-dot--offline {
           background: #dc2626;
           box-shadow: 0 0 4px rgba(220, 38, 38, 0.3);
         }
@@ -268,40 +363,75 @@ export default function Sidebar() {
           }
         }
 
-        .sidebar__logout-btn {
+        .navbar__user-info {
           display: flex;
           align-items: center;
           gap: var(--space-sm);
-          padding: 8px 12px;
+          border-left: 1px solid #cbd5e1;
+          padding-left: var(--space-md);
+        }
+
+        .navbar__username {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .navbar__logout-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 10px;
           background: #fee2e2;
           border: 1px solid #fca5a5;
           border-radius: var(--radius-sm);
           color: #b91c1c;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 700;
           cursor: pointer;
           transition: all var(--transition-base);
-          width: 100%;
-          justify-content: center;
-          margin-bottom: 2px;
         }
 
-        .sidebar__logout-btn:hover {
+        .navbar__logout-btn:hover {
           background: #fecaca;
           color: #991b1b;
           border-color: #f87171;
         }
-        
-        .sidebar__logout-btn:active {
-          transform: translateY(0);
-        }
 
-        @media (max-width: 768px) {
-          .sidebar {
+        @media (max-width: 1024px) {
+          .navbar__container {
+            padding: 0 var(--space-md);
+          }
+          .navbar__title {
             display: none;
           }
         }
+
+        @media (max-width: 768px) {
+          .navbar {
+            height: auto;
+            min-height: 80px;
+            padding-bottom: 6px;
+          }
+          .navbar__container {
+            flex-direction: column;
+            padding: var(--space-sm);
+            gap: var(--space-sm);
+            align-items: stretch;
+          }
+          .navbar__brand {
+            justify-content: flex-start;
+          }
+          .navbar__nav {
+            justify-content: center;
+            overflow-x: auto;
+            padding-bottom: 4px;
+          }
+          .navbar__user-section {
+            justify-content: flex-end;
+          }
+        }
       `}</style>
-    </aside>
+    </header>
   );
 }

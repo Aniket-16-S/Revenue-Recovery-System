@@ -231,21 +231,13 @@ export default function ExplorerPage() {
       <div className="glass-card filter-bar">
         <div className="filter-group" style={{ minWidth: 220 }}>
           <label className="filter-group__label">Search Owner</label>
-          <div style={{ position: "relative" }}>
-            <Search
-              size={14}
-              style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "var(--text-tertiary)",
-              }}
-            />
+          <div className="input-wrapper">
+            <span className="input-prefix">
+              <Search size={14} />
+            </span>
             <input
               type="text"
-              className="input"
-              style={{ paddingLeft: 34 }}
+              className="input-field"
               placeholder="Search by name..."
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}

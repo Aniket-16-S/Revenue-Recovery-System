@@ -95,7 +95,10 @@ export default function AuthWrapper({ children }) {
       <div className="login-page">
         {/* Top Official Banner */}
         <header className="gov-header">
-          <div className="gov-header__tricolor" />
+          <div className="gov-header__tricolor">
+            <div className="gov-header__blue-line" />
+            <div className="gov-header__flag-line" />
+          </div>
           <div className="gov-header__container">
             <div className="gov-header__brand">
               <div className="gov-header__emblem">
@@ -227,8 +230,25 @@ export default function AuthWrapper({ children }) {
             flex-shrink: 0;
           }
           .gov-header__tricolor {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+          }
+          .gov-header__blue-line {
+            height: 2px;
+            background: #0b3c5d;
+            width: 100%;
+          }
+          .gov-header__flag-line {
             height: 4px;
-            background: linear-gradient(to right, #ff9933 0%, #ff9933 33.3%, #ffffff 33.3%, #ffffff 66.6%, #128807 66.6%, #128807 100%);
+            background: linear-gradient(
+              to right,
+              #ff9933 0%,
+              rgba(255, 255, 255, 0) 30%,
+              rgba(255, 255, 255, 0) 70%,
+              #128807 100%
+            );
+            width: 100%;
           }
           .gov-header__container {
             max-width: 1200px;
@@ -259,12 +279,12 @@ export default function AuthWrapper({ children }) {
             flex-direction: column;
           }
           .gov-header__department {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--accent-cyan);
           }
           .gov-header__agency {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-tertiary);
           }
