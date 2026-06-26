@@ -173,7 +173,7 @@ export default function ManageUsersPage() {
   if (checkingAuth) {
     return (
       <div className="center-loader">
-        <Loader2 className="spinning" size={40} color="#22d3ee" />
+        <Loader2 className="spinning" size={40} color="#0b3c5d" />
         <style jsx>{`
           .center-loader {
             height: calc(100vh - 80px);
@@ -488,30 +488,31 @@ export default function ManageUsersPage() {
         }
 
         .user-row {
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.04);
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
           border-radius: var(--radius-md);
           padding: var(--space-md);
+          box-shadow: var(--shadow-sm);
         }
 
         .user-row__header {
           display: flex;
-          justify-content: border-between;
+          justify-content: space-between;
           align-items: center;
           margin-bottom: var(--space-sm);
         }
 
         .user-row__username {
-          font-weight: 600;
-          color: var(--text-primary);
+          font-weight: 700;
+          color: var(--accent-cyan);
           font-size: 15px;
           flex: 1;
         }
 
         .btn-delete {
-          background: rgba(239, 68, 68, 0.1);
-          border: 1px solid rgba(239, 68, 68, 0.2);
-          color: #fca5a5;
+          background: #fee2e2;
+          border: 1px solid #fca5a5;
+          color: #b91c1c;
           padding: 6px;
           border-radius: var(--radius-sm);
           cursor: pointer;
@@ -522,13 +523,14 @@ export default function ManageUsersPage() {
         }
 
         .btn-delete:hover:not(:disabled) {
-          background: rgba(239, 68, 68, 0.25);
-          color: white;
-          border-color: rgba(239, 68, 68, 0.4);
+          background: #fecaca;
+          color: #991b1b;
+          border-color: #f87171;
         }
 
         .recovery-section {
-          background: rgba(0, 0, 0, 0.15);
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
           border-radius: var(--radius-sm);
           padding: var(--space-sm);
           margin-top: var(--space-xs);
@@ -540,6 +542,7 @@ export default function ManageUsersPage() {
           gap: 6px;
           font-size: 11px;
           margin-top: 6px;
+          font-weight: 600;
         }
 
         .recovery-alert--error {
@@ -547,7 +550,7 @@ export default function ManageUsersPage() {
         }
 
         .recovery-alert--success {
-          color: #10b981;
+          color: #15803d;
         }
 
         .spinning {

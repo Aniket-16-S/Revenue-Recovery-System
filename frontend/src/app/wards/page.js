@@ -16,9 +16,9 @@ import ChartTooltip from "@/components/ChartTooltip";
 import { fetchWardSummary, formatCurrency, formatFullCurrency } from "@/lib/api";
 
 const CHART_COLORS = [
-  "#22d3ee", "#3b82f6", "#8b5cf6", "#a855f7",
-  "#ec4899", "#f59e0b", "#10b981", "#ef4444",
-  "#06b6d4", "#6366f1", "#d946ef", "#14b8a6",
+  "#0b3c5d", "#328cc1", "#1d2731", "#4f46e5",
+  "#0891b2", "#0f766e", "#16a34a", "#d97706",
+  "#2563eb", "#475569", "#7c3aed", "#b91c1c",
 ];
 
 export default function WardsPage() {
@@ -299,10 +299,10 @@ export default function WardsPage() {
               <div className="chart-wrapper">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
-                    <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                    <PolarGrid stroke="#cbd5e1" />
                     <PolarAngleAxis
                       dataKey="metric"
-                      tick={{ fill: "#94a3b8", fontSize: 11 }}
+                      tick={{ fill: "#334155", fontSize: 11 }}
                     />
                     <PolarRadiusAxis tick={false} axisLine={false} />
                     {compareWards.map((w, i) => (
@@ -310,8 +310,8 @@ export default function WardsPage() {
                         key={w.ward_id}
                         name={`Ward ${w.ward_number || w.ward_id}`}
                         dataKey={`Ward ${w.ward_number || w.ward_id}`}
-                        stroke={CHART_COLORS[i]}
-                        fill={CHART_COLORS[i]}
+                        stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                        fill={CHART_COLORS[i % CHART_COLORS.length]}
                         fillOpacity={0.15}
                         strokeWidth={2}
                       />
@@ -320,7 +320,7 @@ export default function WardsPage() {
                       verticalAlign="bottom"
                       iconType="circle"
                       iconSize={8}
-                      formatter={(v) => <span style={{ color: "#94a3b8", fontSize: 12 }}>{v}</span>}
+                      formatter={(v) => <span style={{ color: "#334155", fontSize: 12 }}>{v}</span>}
                     />
                     <Tooltip content={<ChartTooltip formatter={(v) => `${Math.round(v)}%`} />} />
                   </RadarChart>
@@ -337,21 +337,21 @@ export default function WardsPage() {
               <div className="chart-wrapper">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={compareBarData} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                     <XAxis
                       dataKey="name"
-                      tick={{ fill: "#94a3b8", fontSize: 11 }}
-                      axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
+                      tick={{ fill: "#334155", fontSize: 11 }}
+                      axisLine={{ stroke: "#cbd5e1" }}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tick={{ fill: "#334155", fontSize: 11 }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(v) => formatCurrency(v)}
                     />
                     <Tooltip content={<ChartTooltip />} />
-                    <Bar dataKey="outstanding" name="Outstanding" fill="#22d3ee" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="outstanding" name="Outstanding" fill="#0b3c5d" radius={[4, 4, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

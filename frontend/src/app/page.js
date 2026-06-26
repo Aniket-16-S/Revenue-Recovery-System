@@ -21,16 +21,16 @@ import {
 
 /* ── Chart colour palette ──────────────────────────────────────────── */
 const CHART_COLORS = [
-  "#22d3ee", "#3b82f6", "#8b5cf6", "#a855f7",
-  "#ec4899", "#f59e0b", "#10b981", "#ef4444",
-  "#06b6d4", "#6366f1", "#d946ef", "#14b8a6",
+  "#0b3c5d", "#328cc1", "#1d2731", "#4f46e5",
+  "#0891b2", "#0f766e", "#16a34a", "#d97706",
+  "#2563eb", "#475569", "#7c3aed", "#b91c1c",
 ];
 
 const RISK_COLORS = {
-  CRITICAL: "#ef4444",
-  HIGH: "#f97316",
-  MEDIUM: "#f59e0b",
-  LOW: "#10b981",
+  CRITICAL: "#dc2626",
+  HIGH: "#ea580c",
+  MEDIUM: "#eab308",
+  LOW: "#16a34a",
 };
 
 /* ================================================================== */
@@ -207,15 +207,15 @@ export default function DashboardPage() {
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                 <XAxis
                   dataKey="name"
-                  tick={{ fill: "#64748b", fontSize: 11 }}
-                  axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
+                  tick={{ fill: "#334155", fontSize: 11 }}
+                  axisLine={{ stroke: "#cbd5e1" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: "#64748b", fontSize: 11 }}
+                  tick={{ fill: "#334155", fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => formatCurrency(v)}
@@ -223,8 +223,8 @@ export default function DashboardPage() {
                 <Tooltip content={<ChartTooltip />} />
                 <defs>
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#22d3ee" />
-                    <stop offset="100%" stopColor="#3b82f6" />
+                    <stop offset="0%" stopColor="#0b3c5d" />
+                    <stop offset="100%" stopColor="#328cc1" />
                   </linearGradient>
                 </defs>
                 <Bar
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                   iconType="circle"
                   iconSize={8}
                   formatter={(value) => (
-                    <span style={{ color: "#94a3b8", fontSize: 12 }}>{value}</span>
+                    <span style={{ color: "#334155", fontSize: 12 }}>{value}</span>
                   )}
                 />
               </PieChart>
