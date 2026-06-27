@@ -19,10 +19,10 @@ const PROPERTY_TYPES = ["ALL", "Residential", "Commercial", "Industrial"];
 const PAGE_SIZE = 15;
 
 const RISK_COLORS = {
-  CRITICAL: "#ef4444",
-  HIGH: "#f97316",
-  MEDIUM: "#f59e0b",
-  LOW: "#10b981",
+  CRITICAL: "#dc2626",
+  HIGH: "#ea580c",
+  MEDIUM: "#eab308",
+  LOW: "#16a34a",
 };
 
 export default function ExplorerPage() {
@@ -231,21 +231,13 @@ export default function ExplorerPage() {
       <div className="glass-card filter-bar">
         <div className="filter-group" style={{ minWidth: 220 }}>
           <label className="filter-group__label">Search Owner</label>
-          <div style={{ position: "relative" }}>
-            <Search
-              size={14}
-              style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "var(--text-tertiary)",
-              }}
-            />
+          <div className="input-wrapper">
+            <span className="input-prefix">
+              <Search size={14} />
+            </span>
             <input
               type="text"
-              className="input"
-              style={{ paddingLeft: 34 }}
+              className="input-field"
               placeholder="Search by name..."
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
@@ -451,15 +443,15 @@ export default function ExplorerPage() {
             <div className="chart-wrapper">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={typeDistribution} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                   <XAxis
                     dataKey="name"
-                    tick={{ fill: "#64748b", fontSize: 11 }}
-                    axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
+                    tick={{ fill: "#334155", fontSize: 11 }}
+                    axisLine={{ stroke: "#cbd5e1" }}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "#64748b", fontSize: 11 }}
+                    tick={{ fill: "#334155", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(v) => formatCurrency(v)}
@@ -467,8 +459,8 @@ export default function ExplorerPage() {
                   <Tooltip content={<ChartTooltip />} />
                   <defs>
                     <linearGradient id="typeBarGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#f59e0b" />
-                      <stop offset="100%" stopColor="#ef4444" />
+                      <stop offset="0%" stopColor="#0b3c5d" />
+                      <stop offset="100%" stopColor="#328cc1" />
                     </linearGradient>
                   </defs>
                   <Bar dataKey="outstanding" name="Outstanding" fill="url(#typeBarGrad)" radius={[4, 4, 0, 0]} maxBarSize={50} />
@@ -506,7 +498,7 @@ export default function ExplorerPage() {
                     verticalAlign="bottom"
                     iconType="circle"
                     iconSize={8}
-                    formatter={(v) => <span style={{ color: "#94a3b8", fontSize: 12 }}>{v}</span>}
+                    formatter={(v) => <span style={{ color: "#334155", fontSize: 12 }}>{v}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>

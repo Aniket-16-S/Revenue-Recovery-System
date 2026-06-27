@@ -35,8 +35,15 @@ COPY . /app/
 # Ensure necessary output folders exist
 RUN mkdir -p /app/notices /app/temp
 
+# Copy the entrypoint script
+COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
 # Expose port 8000 for the FastAPI backend
 EXPOSE 8000
+
+# Set entrypoint to run data generation before starting the server
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 # Start uvicorn server
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

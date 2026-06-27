@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadarChart, Radar, PolarGrid,
@@ -16,9 +17,9 @@ import ChartTooltip from "@/components/ChartTooltip";
 import { fetchWardSummary, formatCurrency, formatFullCurrency } from "@/lib/api";
 
 const CHART_COLORS = [
-  "#22d3ee", "#3b82f6", "#8b5cf6", "#a855f7",
-  "#ec4899", "#f59e0b", "#10b981", "#ef4444",
-  "#06b6d4", "#6366f1", "#d946ef", "#14b8a6",
+  "#0b3c5d", "#328cc1", "#1d2731", "#4f46e5",
+  "#0891b2", "#0f766e", "#16a34a", "#d97706",
+  "#2563eb", "#475569", "#7c3aed", "#b91c1c",
 ];
 
 export default function WardsPage() {
@@ -27,6 +28,32 @@ export default function WardsPage() {
   const [selectedWard, setSelectedWard] = useState(null);
   const [compareWards, setCompareWards] = useState([]);
   const [filterDistrict, setFilterDistrict] = useState("ALL");
+  const [hoveredWard, setHoveredWard] = useState(null);
+  const hoverTimers = useRef({});
+
+  const handleMouseEnter = (wardId) => {
+    if (hoverTimers.current[wardId]) {
+      clearTimeout(hoverTimers.current[wardId]);
+    }
+    hoverTimers.current[wardId] = setTimeout(() => {
+      setHoveredWard(wardId);
+    }, 800);
+  };
+
+  const handleMouseLeave = (wardId) => {
+    if (hoverTimers.current[wardId]) {
+      clearTimeout(hoverTimers.current[wardId]);
+      delete hoverTimers.current[wardId];
+    }
+    setHoveredWard((prev) => (prev === wardId ? null : prev));
+  };
+
+  useEffect(() => {
+    const timers = hoverTimers.current;
+    return () => {
+      Object.values(timers).forEach(clearTimeout);
+    };
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -184,14 +211,27 @@ export default function WardsPage() {
             {wards.map((w, i) => {
               const isSelected = compareWards.some((c) => c.ward_id === w.ward_id);
               return (
-                <div
+                <motion.div
                   key={w.ward_id}
                   className={`glass-card glass-card--interactive ward-card`}
                   style={{
-                    borderColor: isSelected ? "var(--accent-cyan)" : undefined,
-                    boxShadow: isSelected ? "var(--shadow-glow-cyan)" : undefined,
+                    borderColor: isSelected ? "var(--accent-cyan)" : hoveredWard === w.ward_id ? "var(--accent-cyan)" : undefined,
+                    position: "relative",
+                    zIndex: hoveredWard === w.ward_id ? 50 : 1,
+                    borderBottomLeftRadius: hoveredWard === w.ward_id ? 0 : undefined,
+                    borderBottomRightRadius: hoveredWard === w.ward_id ? 0 : undefined,
+                    overflow: hoveredWard === w.ward_id ? "visible" : "hidden",
                   }}
                   onClick={() => toggleCompare(w)}
+                  onMouseEnter={() => handleMouseEnter(w.ward_id)}
+                  onMouseLeave={() => handleMouseLeave(w.ward_id)}
+                  animate={{
+                    scale: hoveredWard === w.ward_id ? 1.08 : 1.0,
+                    boxShadow: hoveredWard === w.ward_id
+                      ? "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                      : isSelected ? "var(--shadow-glow-cyan)" : "var(--shadow-sm)",
+                  }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                   <div className="ward-card__number">{w.ward_number || w.ward_id}</div>
                   <div className="ward-card__name">
@@ -253,6 +293,63 @@ export default function WardsPage() {
                     </div>
                   </div>
 
+                  {/* Expanded Detailed Information Overlay */}
+                  <AnimatePresence>
+                    {hoveredWard === w.ward_id && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scaleY: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scaleY: 1 }}
+                        exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: -2,
+                          right: -2,
+                          background: "#ffffff",
+                          border: "1px solid var(--accent-cyan)",
+                          borderTop: "0px dashed var(--glass-border)",
+                          borderBottomLeftRadius: "var(--radius-lg)",
+                          borderBottomRightRadius: "var(--radius-lg)",
+                          padding: "16px",
+                          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)",
+                          zIndex: 50,
+                          transformOrigin: "top"
+                        }}
+                      >
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: 16 }}>
+                          <div style={{ background: "#fef2f2", padding: "8px 10px", borderRadius: "8px", border: "1px solid #fecaca" }}>
+                            <div style={{ fontSize: "12px", color: "#ef4444", textTransform: "uppercase", fontWeight: "700" }}>Critical</div>
+                            <div style={{ fontSize: "20px", fontWeight: "800", color: "#b91c1c" }}>{w.critical_count}</div>
+                          </div>
+                          <div style={{ background: "#fff7ed", padding: "8px 10px", borderRadius: "8px", border: "1px solid #fed7aa" }}>
+                            <div style={{ fontSize: "12px", color: "#f97316", textTransform: "uppercase", fontWeight: "700" }}>High</div>
+                            <div style={{ fontSize: "20px", fontWeight: "800", color: "#c2410c" }}>{w.high_count}</div>
+                          </div>
+                          <div style={{ background: "#fffbeb", padding: "8px 10px", borderRadius: "8px", border: "1px solid #fde68a" }}>
+                            <div style={{ fontSize: "12px", color: "#f59e0b", textTransform: "uppercase", fontWeight: "700" }}>Medium</div>
+                            <div style={{ fontSize: "20px", fontWeight: "800", color: "#b45309" }}>{w.medium_count}</div>
+                          </div>
+                          <div style={{ background: "#ecfdf5", padding: "8px 10px", borderRadius: "8px", border: "1px solid #a7f3d0" }}>
+                            <div style={{ fontSize: "12px", color: "#10b981", textTransform: "uppercase", fontWeight: "700" }}>Low</div>
+                            <div style={{ fontSize: "20px", fontWeight: "800", color: "#047857" }}>{w.low_count}</div>
+                          </div>
+                        </div>
+
+                        <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>ULB Name:</span>
+                            <span style={{ fontSize: "13px", fontWeight: "800", color: "var(--text-primary)" }}>{w.ulb_name || district}</span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Total Dues:</span>
+                            <span style={{ fontSize: "15px", fontWeight: "800", color: "var(--accent-cyan)" }}>{formatFullCurrency(w.total_outstanding)}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {isSelected && (
                     <div
                       style={{
@@ -274,7 +371,7 @@ export default function WardsPage() {
                       ✓
                     </div>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -299,10 +396,10 @@ export default function WardsPage() {
               <div className="chart-wrapper">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
-                    <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                    <PolarGrid stroke="#cbd5e1" />
                     <PolarAngleAxis
                       dataKey="metric"
-                      tick={{ fill: "#94a3b8", fontSize: 11 }}
+                      tick={{ fill: "#334155", fontSize: 11 }}
                     />
                     <PolarRadiusAxis tick={false} axisLine={false} />
                     {compareWards.map((w, i) => (
@@ -310,8 +407,8 @@ export default function WardsPage() {
                         key={w.ward_id}
                         name={`Ward ${w.ward_number || w.ward_id}`}
                         dataKey={`Ward ${w.ward_number || w.ward_id}`}
-                        stroke={CHART_COLORS[i]}
-                        fill={CHART_COLORS[i]}
+                        stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                        fill={CHART_COLORS[i % CHART_COLORS.length]}
                         fillOpacity={0.15}
                         strokeWidth={2}
                       />
@@ -320,7 +417,7 @@ export default function WardsPage() {
                       verticalAlign="bottom"
                       iconType="circle"
                       iconSize={8}
-                      formatter={(v) => <span style={{ color: "#94a3b8", fontSize: 12 }}>{v}</span>}
+                      formatter={(v) => <span style={{ color: "#334155", fontSize: 12 }}>{v}</span>}
                     />
                     <Tooltip content={<ChartTooltip formatter={(v) => `${Math.round(v)}%`} />} />
                   </RadarChart>
@@ -337,21 +434,21 @@ export default function WardsPage() {
               <div className="chart-wrapper">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={compareBarData} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                     <XAxis
                       dataKey="name"
-                      tick={{ fill: "#94a3b8", fontSize: 11 }}
-                      axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
+                      tick={{ fill: "#334155", fontSize: 11 }}
+                      axisLine={{ stroke: "#cbd5e1" }}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tick={{ fill: "#334155", fontSize: 11 }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(v) => formatCurrency(v)}
                     />
                     <Tooltip content={<ChartTooltip />} />
-                    <Bar dataKey="outstanding" name="Outstanding" fill="#22d3ee" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="outstanding" name="Outstanding" fill="#0b3c5d" radius={[4, 4, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
