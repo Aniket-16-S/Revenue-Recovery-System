@@ -168,7 +168,7 @@ export default function NoticesPage() {
 
   /* ── Download as PDF ───────────────────────────────────────────── */
   function handleDownloadPdf(propId) {
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    const base = process.env.NEXT_PUBLIC_API_URL;
     const url = `${base}/notices/${propId}/pdf`;
     const a = document.createElement("a");
     a.href = url;

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Building2, User, Lock, AlertCircle, Loader2 } from "lucide-react";
+import FloatingAIAssistant from "./FloatingAIAssistant";
+
 
 export default function AuthWrapper({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,7 +33,7 @@ export default function AuthWrapper({ children }) {
     setError("");
 
     try {
-      const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const base = process.env.NEXT_PUBLIC_API_URL;
       const res = await fetch(`${base}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -521,5 +523,10 @@ export default function AuthWrapper({ children }) {
     );
   }
 
-  return children;
+  return (
+    <>
+      {children}
+      <FloatingAIAssistant />
+    </>
+  );
 }

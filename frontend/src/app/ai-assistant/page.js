@@ -121,7 +121,7 @@ export default function AIAssistantPage() {
 
   /* ── Check agent status on mount ─────────────────────────────────── */
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/ai/status")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/status`)
       .then((r) => r.json())
       .then((d) => setAgentReady(d.ready))
       .catch(() => setAgentReady(false));
@@ -206,7 +206,7 @@ export default function AIAssistantPage() {
     setStatus("");
     setIsLoading(false);
     try {
-      await fetch(`http://127.0.0.1:8000/ai/chat/${sessionId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/chat/${sessionId}`, {
         method: "DELETE",
       });
     } catch (_) { }

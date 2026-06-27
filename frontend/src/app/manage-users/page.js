@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   UserPlus,
   Trash2,
@@ -11,6 +12,7 @@ import {
   AlertCircle,
   User,
   Lock,
+  X,
 } from "lucide-react";
 
 export default function ManageUsersPage() {
@@ -28,6 +30,14 @@ export default function ManageUsersPage() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
 
+  // Password confirmation modal states
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmError, setConfirmError] = useState("");
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [pendingUserToAdd, setPendingUserToAdd] = useState(null);
+  const [confirmingPassword, setConfirmingPassword] = useState(false);
+
   // Recovery email inputs map (key: username, value: email)
   const [recoveryEmails, setRecoveryEmails] = useState({});
   const [sendingRecovery, setSendingRecovery] = useState({}); // key: username, value: boolean
@@ -36,7 +46,7 @@ export default function ManageUsersPage() {
 
   const [deletingUser, setDeletingUser] = useState({}); // key: username, value: boolean
 
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const base = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
@@ -63,7 +73,7 @@ export default function ManageUsersPage() {
     }
   };
 
-  const handleAddUser = async (e) => {
+  const handleAddUser = (e) => {
     e.preventDefault();
     setFormError("");
     setFormSuccess("");
@@ -76,12 +86,44 @@ export default function ManageUsersPage() {
       return;
     }
 
-    setAddingUser(true);
+    setPendingUserToAdd({ username, password });
+    setConfirmPassword("");
+    setConfirmError("");
+    setShowPasswordPrompt(true);
+  };
+
+  const handleConfirmPasswordSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setConfirmError("");
+    setConfirmingPassword(true);
+
+    const adminUsername = localStorage.getItem("username");
+
     try {
+      const loginRes = await fetch(`${base}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: adminUsername,
+          password: confirmPassword,
+        }),
+      });
+
+      if (!loginRes.ok) {
+        throw new Error("Invalid admin password");
+      }
+
+      setFailedAttempts(0);
+      setShowPasswordPrompt(false);
+      setAddingUser(true);
+
       const res = await fetch(`${base}/auth/users/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: pendingUserToAdd.username,
+          password: pendingUserToAdd.password,
+        }),
       });
 
       if (!res.ok) {
@@ -89,13 +131,26 @@ export default function ManageUsersPage() {
         throw new Error(errData.detail || "Failed to add user");
       }
 
-      setFormSuccess(`User '${username}' added/updated successfully!`);
+      setFormSuccess(`User '${pendingUserToAdd.username}' added/updated successfully!`);
       setNewUsername("");
       setNewPassword("");
+      setPendingUserToAdd(null);
       fetchUsers();
     } catch (err) {
-      setFormError(err.message || "Failed to add user");
+      if (err.message === "Invalid admin password") {
+        const nextAttempts = failedAttempts + 1;
+        if (nextAttempts > 3) {
+          localStorage.clear();
+          window.location.reload();
+        } else {
+          setFailedAttempts(nextAttempts);
+          setConfirmError(`Incorrect password. Attempt ${nextAttempts} of 3 failed. You will be logged out on the 4th failure.`);
+        }
+      } else {
+        setConfirmError(err.message || "Failed to add user");
+      }
     } finally {
+      setConfirmingPassword(false);
       setAddingUser(false);
     }
   };
@@ -588,7 +643,194 @@ export default function ManageUsersPage() {
             grid-template-columns: 1fr;
           }
         }
+        .confirm-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(15, 23, 42, 0.4);
+          backdrop-filter: blur(5px);
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: var(--space-md);
+        }
+
+        .confirm-modal-card {
+          width: 100%;
+          max-width: 440px;
+          background: #ffffff;
+          border: 2px solid var(--glass-border);
+          border-radius: var(--radius-md) !important;
+          box-shadow: var(--shadow-lg);
+          padding: var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          border-top: 4px solid var(--accent-cyan) !important;
+        }
+
+        .confirm-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--space-md);
+        }
+
+        .confirm-modal-header h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .confirm-modal-close {
+          background: transparent;
+          border: none;
+          color: var(--text-tertiary);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .confirm-modal-close:hover {
+          color: var(--text-primary);
+        }
+
+        .confirm-modal-form {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .confirm-modal-desc {
+          font-size: 13px;
+          color: var(--text-secondary);
+          line-height: 1.5;
+          margin-bottom: var(--space-md);
+        }
+
+        .confirm-modal-error {
+          display: flex;
+          align-items: flex-start;
+          gap: var(--space-xs);
+          color: var(--accent-red);
+          font-size: 12px;
+          padding: var(--space-xs) var(--space-sm);
+          background: #fee2e2;
+          border: 1px solid #fca5a5;
+          border-radius: var(--radius-sm);
+          font-weight: 600;
+          margin-bottom: var(--space-md);
+          line-height: 1.4;
+        }
+
+        .confirm-modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: var(--space-sm);
+          border-top: 1px solid #cbd5e1;
+          padding-top: var(--space-md);
+        }
+
+        .confirm-modal-actions .btn {
+          font-size: 13px;
+          font-weight: 700;
+          padding: 8px 16px;
+        }
+
+        .btn--ghost {
+          background: transparent;
+          color: var(--text-secondary);
+          border: 1px solid transparent;
+        }
+
+        .btn--ghost:hover:not(:disabled) {
+          background: #f1f5f9;
+          color: var(--text-primary);
+        }
       `}</style>
+
+      {/* Password Confirmation Modal overlay with background blur */}
+      <AnimatePresence>
+        {showPasswordPrompt && (
+          <div className="confirm-modal-overlay">
+            <motion.div
+              className="confirm-modal-card glass-card"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            >
+              <div className="confirm-modal-header">
+                <h3>Verify Administrator Password</h3>
+                <button className="confirm-modal-close" onClick={() => setShowPasswordPrompt(false)}>
+                  <X size={16} />
+                </button>
+              </div>
+              <form onSubmit={handleConfirmPasswordSubmit} className="confirm-modal-form">
+                <p className="confirm-modal-desc">
+                  To create or update normal user <strong>'{pendingUserToAdd?.username}'</strong>, please confirm your administrator credentials.
+                </p>
+
+                {/* 16px gap spacing between the icon and input field box as requested */}
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "20px", width: "100%" }}>
+                  <div style={{ color: "var(--accent-cyan)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Lock size={20} />
+                  </div>
+                  <div className="input-wrapper" style={{ flex: 1 }}>
+                    <input
+                      type="password"
+                      className="input-field"
+                      placeholder="Enter admin password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        setConfirmError("");
+                      }}
+                      required
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                {confirmError && (
+                  <div className="confirm-modal-error">
+                    <AlertCircle size={14} />
+                    <span>{confirmError}</span>
+                  </div>
+                )}
+
+                <div className="confirm-modal-actions">
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    onClick={() => setShowPasswordPrompt(false)}
+                    disabled={confirmingPassword}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn--primary"
+                    disabled={confirmingPassword || !confirmPassword}
+                  >
+                    {confirmingPassword ? (
+                      <>
+                        <Loader2 size={14} className="spinning" style={{ marginRight: 6 }} />
+                        Verifying...
+                      </>
+                    ) : (
+                      "Confirm & Create"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

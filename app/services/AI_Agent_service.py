@@ -24,10 +24,7 @@ from sqlalchemy.ext.asyncio import (
 
 logger = logging.getLogger(__name__)
 
-_AI_DB_URL = (
-    os.getenv("AI_AGENT_DATABASE_URL")
-    or "postgresql+asyncpg://ai_agent:abcd_1234@localhost/postgres"
-)
+_AI_DB_URL = os.getenv("AI_AGENT_DATABASE_URL")
 
 _ai_engine = create_async_engine(
     _AI_DB_URL,
