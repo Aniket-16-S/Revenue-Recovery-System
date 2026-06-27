@@ -25,6 +25,11 @@ from sqlalchemy.ext.asyncio import (
 logger = logging.getLogger(__name__)
 
 _AI_DB_URL = os.getenv("AI_AGENT_DATABASE_URL")
+if _AI_DB_URL:
+    if _AI_DB_URL.startswith("postgres://"):
+        _AI_DB_URL = _AI_DB_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif _AI_DB_URL.startswith("postgresql://") and not _AI_DB_URL.startswith("postgresql+asyncpg://"):
+        _AI_DB_URL = _AI_DB_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 _ai_engine = create_async_engine(
     _AI_DB_URL,
