@@ -221,16 +221,10 @@ export default function DashboardPage() {
                   tickFormatter={(v) => formatCurrency(v)}
                 />
                 <Tooltip content={<ChartTooltip />} />
-                <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0b3c5d" />
-                    <stop offset="100%" stopColor="#328cc1" />
-                  </linearGradient>
-                </defs>
                 <Bar
                   dataKey="outstanding"
                   name="Outstanding"
-                  fill="url(#barGradient)"
+                  fill="#328cc1"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={40}
                 />

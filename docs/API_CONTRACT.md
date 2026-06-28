@@ -225,3 +225,100 @@ A binary PDF stream. In the browser, this will prompt a file download named `Rem
 - `404 Not Found`: Property ID not found.
 - `500 Internal Server Error`: PDF compilation or template rendering error.
 
+---
+
+## AI Assistant
+
+### GET `/ai/status`
+Returns whether the LangGraph agent is initialized and ready.
+
+**Method:** `GET`
+**Path:** `/ai/status`
+
+**Example Response:**
+```json
+{
+  "ready": true,
+  "status": "online"
+}
+```
+
+### POST `/ai/chat`
+Sends a user message to the AI agent and streams the response via Server-Sent Events (SSE).
+
+**Method:** `POST`
+**Path:** `/ai/chat`
+**Body Parameters:**
+- `message` (required, string): User query
+- `session_id` (required, string): Client-generated UUID
+
+**Example Request:**
+```http
+POST /ai/chat
+Content-Type: application/json
+
+{
+  "message": "Who are the top defaulters?",
+  "session_id": "abc-123"
+}
+```
+
+### DELETE `/ai/chat/{session_id}`
+Removes stored conversation history for a given session.
+
+**Method:** `DELETE`
+**Path:** `/ai/chat/{session_id}`
+
+---
+
+## Authentication & Users
+
+### POST `/auth/login`
+Authenticates a user.
+
+**Method:** `POST`
+**Path:** `/auth/login`
+**Body Parameters:**
+- `username` (required, string)
+- `password` (required, string)
+
+**Example Response:**
+```json
+{
+  "status": "success",
+  "role": "admin",
+  "username": "admin"
+}
+```
+
+### GET `/auth/users`
+Lists all non-admin users in the system.
+
+**Method:** `GET`
+**Path:** `/auth/users`
+
+### POST `/auth/users/add`
+Registers a new user (admin cannot be added).
+
+**Method:** `POST`
+**Path:** `/auth/users/add`
+**Body Parameters:**
+- `username` (required, string)
+- `password` (required, string)
+
+### POST `/auth/users/remove`
+Removes an existing user.
+
+**Method:** `POST`
+**Path:** `/auth/users/remove`
+**Body Parameters:**
+- `username` (required, string)
+
+### POST `/auth/users/recover-password`
+Initiates password recovery email.
+
+**Method:** `POST`
+**Path:** `/auth/users/recover-password`
+**Body Parameters:**
+- `username` (required, string)
+- `user_mail` (required, string)
