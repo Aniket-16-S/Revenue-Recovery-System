@@ -358,44 +358,41 @@ export default function Sidebar() {
 
         .navbar__link {
           display: flex;
+          flex-direction: column;
           align-items: center;
+          justify-content: center;
           border-radius: var(--radius-sm);
           color: var(--text-secondary);
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           text-decoration: none;
           position: relative;
           transition: all var(--transition-base);
-          height: 38px;
-          overflow: hidden;
+          height: auto;
+          min-height: 54px;
+          padding: 6px 10px;
+          gap: 4px;
+          text-align: center;
         }
 
         .navbar__link-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 7px 12px;
-          height: 100%;
           transition: all var(--transition-base);
           position: relative;
           z-index: 2;
         }
 
         .navbar__link-text {
-          padding: 0 14px;
           position: relative;
           z-index: 2;
+          line-height: 1.2;
         }
 
         .navbar__link:hover {
           background: #e2e8f0;
-          border-color: #cbd5e1;
           color: var(--accent-cyan);
-        }
-
-        .navbar__link:hover .navbar__link-icon {
-          background: #cbd5e1;
-          border-right-color: #cbd5e1;
         }
 
         .navbar__link :global(span),
@@ -416,13 +413,7 @@ export default function Sidebar() {
 
         .navbar__link--active {
           color: #0369a1 !important;
-          border-color: #bae6fd !important;
           background: rgba(224, 242, 254, 0.5) !important;
-        }
-
-        .navbar__link--active .navbar__link-icon {
-          background: rgba(186, 230, 253, 0.4);
-          border-right-color: #bae6fd;
         }
 
         .navbar__user-section {
