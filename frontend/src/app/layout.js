@@ -16,9 +16,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "Revenue Recovery System, Government of Maharashtra",
+  title: "Revenue Recovery System, NOT Government of Maharashtra",
   description:
-    "AI-powered property tax defaulter management and revenue recovery dashboard for the Government of Maharashtra. Monitor KPIs, generate notices, and analyze ward-level data.",
+    "AI-powered property tax defaulter management and revenue recovery dashboard sample. NOT by the Government of Maharashtra. Monitor KPIs, generate notices, and analyze ward-level data.",
   keywords: "revenue recovery, property tax, Maharashtra, defaulters, dashboard",
 };
 

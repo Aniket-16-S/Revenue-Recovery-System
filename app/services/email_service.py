@@ -12,7 +12,7 @@ from email.message import EmailMessage
 import dotenv
 
 # Ensure environment variables are loaded
-dotenv.load_dotenv()
+dotenv.load_dotenv(override=True)
 
 # Simple regex for basic email format validation
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
