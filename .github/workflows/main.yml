@@ -1,0 +1,27 @@
+name: Trigger Render Deploys
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Service 1
+        env:
+          WEBHOOK: ${{ secrets.RENDER_WEBHOOK_1 }}
+        run: |
+          curl --fail --silent --show-error \
+            -X POST \
+            "$WEBHOOK"
+
+      - name: Trigger Render Service 2
+        env:
+          WEBHOOK: ${{ secrets.RENDER_WEBHOOK_2 }}
+        run: |
+          curl --fail --silent --show-error \
+            -X POST \
+            "$WEBHOOK"
