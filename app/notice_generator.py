@@ -16,7 +16,7 @@ import dotenv
 from langchain_core.messages import HumanMessage
 
 # Load .env from project root
-dotenv.load_dotenv()
+dotenv.load_dotenv(override=True)
 
 VALID_NOTICE_TYPES = {"Reminder", "Payment Due", "Final Demand"}
 

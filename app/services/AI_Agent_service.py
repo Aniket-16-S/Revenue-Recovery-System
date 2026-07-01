@@ -3,6 +3,10 @@ from __future__ import annotations
 import os
 import logging
 from typing import Annotated, AsyncGenerator, Sequence, TypedDict, Dict, List
+import dotenv
+
+# Load environment variables from .env
+dotenv.load_dotenv(override=True)
 
 from langchain_core.messages import (
     AIMessage,
@@ -84,61 +88,50 @@ async def query_database(query: str) -> str:
         return f"DB ERROR: {exc}\n\n**Attempted Query:**\n```sql\n{query}\n```"
 
 
-def _build_llm():
-    """Return a LangChain chat model (Gemini first, then Groq)."""
-    gemini_key = (
-        os.getenv("Google_AI_Studio") or os.getenv("GOOGLE_API_KEY") or ""
-    ).strip()
+def _build_llm_list():
+    """Returns a list of (model_description, llm_instance) tuples to try in order."""
+    models = []
+
     groq_key = (os.getenv("Groq") or os.getenv("GROQ_API_KEY") or "").strip()
+    gemini_key = (os.getenv("Google_AI_Studio") or os.getenv("GOOGLE_API_KEY") or "").strip()
 
-    if gemini_key:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        logger.info("AI Agent: using Gemini 2.5 Flash Lite")
-        return ChatGoogleGenerativeAI(
-            # ── Gemini models (swap model= string to switch) 
-            # gemini-2.5-flash
-            #  gemini-2.5-pro
-            # gemini-2.5-flash-lite
-            # gemini-2.0-flash
-            # gemini-2.0-flash-lite
-            # gemini-2.0-flash-001
-            # gemini-2.0-flash-lite-001
-            # gemini-2.5-flash-preview-tts
-            # gemini-2.5-pro-preview-tts
-            # gemma-4-26b-a4b-it
-            # gemma-4-31b-it
-            # gemini-flash-latest
-            # gemini-flash-lite-latest
-            # gemini-pro-latest
-            # gemini-3-pro-preview
-            # gemini-3-flash-preview
-            # gemini-3.1-pro-preview
-            # gemini-3-flash-lite-preview
-            # gemini-3.1-flash-lite
-            
-            model="gemini-2.0-flash-lite",
-            google_api_key=gemini_key,
-            temperature=0.3,
-        )
-
+    # Prioritize Groq (Grok) models first
     if groq_key:
         from langchain_groq import ChatGroq
-        logger.info("AI Agent: using Groq llama-3.1-8b-instant")
-        return ChatGroq(
-            # ── Groq models (swap model= string to switch) ────────────────
-            # "llama-3.1-8b-instant"      ← current: fastest, lowest latency
-            # "llama-3.3-70b-versatile"   ← best quality on Groq
-            # "llama-3.1-70b-versatile"   ← older 70b, stable
-            # "mixtral-8x7b-32768"        ← good for structured/SQL tasks
-            # "gemma2-9b-it"              ← Google Gemma via Groq
-            model="llama-3.1-8b-instant",
-            api_key=groq_key,
-            temperature=0.3,
+        groq_models = [
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it"
+        ]
+        for model in groq_models:
+            models.append((
+                f"Groq {model}",
+                ChatGroq(
+                    model=model,
+                    api_key=groq_key,
+                    temperature=0.3,
+                )
+            ))
+
+    # Then Gemini as a fallback
+    if gemini_key:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        models.append((
+            "Gemini gemini-2.0-flash-lite",
+            ChatGoogleGenerativeAI(
+                model="gemini-2.0-flash-lite",
+                google_api_key=gemini_key,
+                temperature=0.3,
+            )
+        ))
+
+    if not models:
+        raise RuntimeError(
+            "No LLM API key found. Set Groq or Google_AI_Studio in your .env file."
         )
 
-    raise RuntimeError(
-        "No LLM API key found. Set Google_AI_Studio or Groq in your .env file."
-    )
+    return models
 
 
 SYSTEM_PROMPT = """You are an intelligent data assistant for the Revenue Recovery System of the Government of Maharashtra.
@@ -146,28 +139,75 @@ Your job is to help government officers understand property tax defaulter data b
 DATABASE SCHEMA - ALL AVAILABLE TABLES :
 
 1. mv_ward_summary  (materialized view — fast, use for ward/district-level aggregations)
-   - ward_id, ward_number, ulb_name
-   - district_id, district_name
-   - total_defaulters, total_outstanding, avg_outstanding
-   - critical_count (outstanding > 5L), high_count (2-5L), medium_count (1-2L), low_count (< 1L)
+   - ward_id: Ward ID (corresponds to wards.id)
+   - ward_number: Name/Number of the ward (corresponds to wards.name)
+   - ulb_name: Name of the ULB
+   - district_id: District ID
+   - district_name: District Name
+   - total_defaulters: Count of defaulters in the ward
+   - total_outstanding: Sum of all outstanding dues
+   - avg_outstanding: Average dues per defaulter
+   - critical_count: Defaulters with CRITICAL risk level (outstanding >= 100,000)
+   - high_count: Defaulters with HIGH risk level (outstanding >= 50,000 and < 100,000)
+   - medium_count: Defaulters with MEDIUM risk level (outstanding >= 10,000 and < 50,000)
+   - low_count: Defaulters with LOW risk level (outstanding < 10,000)
 
 2. defaulters  (partitioned parent — queries both Pune + Mumbai)
-   - property_id, owner_name, ward_id, district_id
-   - property_type, annual_tax, arrears, penalty, interest
-   - years_pending, total_outstanding, risk_level
+   - property_id (BIGINT) — Composite Primary Key
+   - owner_name (VARCHAR)
+   - ward_id (INTEGER) — FOREIGN KEY to `wards.id`
+   - district_id (INTEGER) — Composite Primary Key, FOREIGN KEY to `districts.id`
+   - property_type (VARCHAR)
+   - annual_tax (NUMERIC(14,2))
+   - arrears (NUMERIC(14,2))
+   - penalty (NUMERIC(14,2))
+   - interest (NUMERIC(14,2))
+   - years_pending (INTEGER)
+   - total_outstanding (NUMERIC(14,2))
+   - risk_level (ENUM: 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL')
 
-3. defaulters_pune   — same columns as defaulters, Pune partition only
-4. defaulters_mumbai — same columns as defaulters, Mumbai partition only
+3. defaulters_pune   — same columns as defaulters, Pune partition only (district_id = 1)
+4. defaulters_mumbai — same columns as defaulters, Mumbai partition only (district_id = 2)
 
-5. wards    — ward_id, ward_number, ulb_id, district_id
-6. districts — district_id, district_name, state_id
-7. states   — state_id, state_name
-8. ulbs     — ulb_id, ulb_name, district_id
+5. wards
+   - id (SERIAL, PRIMARY KEY) — referenced by defaulters.ward_id
+   - name (INTEGER) — Typically represents the ward number
+   - ulb_id (INTEGER) — FOREIGN KEY to `ulbs.id`
 
-JOIN HINTS:
-  defaulters → wards       ON defaulters.ward_id = wards.ward_id
-  defaulters → districts   ON defaulters.district_id = districts.district_id
-  wards → districts        ON wards.district_id = districts.district_id
+6. districts
+   - id (SERIAL, PRIMARY KEY) — referenced by defaulters.district_id
+   - name (VARCHAR) — district name
+   - state_id (INTEGER) — FOREIGN KEY to `states.id`
+
+7. states
+   - id (SERIAL, PRIMARY KEY)
+   - name (VARCHAR, UNIQUE) — state name
+
+8. ulbs (Urban Local Bodies)
+   - id (SERIAL, PRIMARY KEY) — referenced by wards.ulb_id
+   - name (VARCHAR) — ULB name
+   - district_id (INTEGER) — FOREIGN KEY to `districts.id`
+
+JOIN HINTS (EXTREMELY IMPORTANT):
+  - TO JOIN defaulters and wards:
+    defaulters.ward_id = wards.id  (NEVER wards.ward_id!)
+  - TO JOIN defaulters and districts:
+    defaulters.district_id = districts.id (NEVER districts.district_id!)
+  - TO JOIN wards and ulbs:
+    wards.ulb_id = ulbs.id
+  - TO JOIN ulbs and districts:
+    ulbs.district_id = districts.id
+  - TO JOIN districts and states:
+    districts.state_id = states.id
+
+RISK LEVELS (CRITICAL):
+  - Always use UPPERCASE strings when querying or filtering risk_level in the database: 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'.
+  - Do NOT use lowercase values (like 'low') in SQL queries since the database uses UPPERCASE enum values.
+  - Risk level thresholds are defined as:
+    - CRITICAL: outstanding >= 100,000 (1 lakh)
+    - HIGH: outstanding >= 50,000 and < 100,000
+    - MEDIUM: outstanding >= 10,000 and < 50,000
+    - LOW: outstanding < 10,000
 
 TOOL USAGE — CRITICAL RULES
 
@@ -182,7 +222,7 @@ TOOL USAGE — CRITICAL RULES
    - Individual defaulter lookup, owner names, property details → defaulters table
    - District/state/ULB name lookups → districts, states, ulbs tables
 5. For location filters: use ILIKE '%Pune%' style matching on district_name / state_name.
-6. "Less than 1 lakh" → low_count in mv_ward_summary, or total_outstanding < 100000 in defaulters.
+6. "Less than 1 lakh" → total_outstanding < 100000 in defaulters, or everything except 'CRITICAL' risk levels.
 7. Present numbers in Indian format: ₹42.5 lakh, ₹1.2 crore, 1,234 defaulters.
 8. After getting all needed data, compose a single clear, insightful answer.
 
@@ -201,21 +241,44 @@ class AgentState(TypedDict):
 
 # Module-level graph (compiled once)
 _graph = None
-_llm_with_tools = None
+_models_with_tools = []
+_current_model_idx = 0
 
 
 def _build_graph():
     """Build and compile the LangGraph workflow."""
-    global _llm_with_tools
+    global _models_with_tools, _current_model_idx
 
     tools = [query_database]
-    llm = _build_llm()
-    _llm_with_tools = llm.bind_tools(tools)
+    models = _build_llm_list()
+
+    _models_with_tools = []
+    for name, llm in models:
+        _models_with_tools.append((name, llm.bind_tools(tools)))
+
+    _current_model_idx = 0
 
     def call_model(state: AgentState):
         """Node 1: LLM decides whether to answer or call a tool."""
-        response = _llm_with_tools.invoke(state["messages"])
-        return {"messages": [response]}
+        global _current_model_idx
+
+        errors = []
+        num_models = len(_models_with_tools)
+        for attempt in range(num_models):
+            idx = (_current_model_idx + attempt) % num_models
+            name, model_runnable = _models_with_tools[idx]
+            logger.info("Attempting LLM call using model: %s", name)
+            try:
+                response = model_runnable.invoke(state["messages"])
+                _current_model_idx = idx
+                return {"messages": [response]}
+            except Exception as exc:
+                logger.warning("LLM call failed with model %s: %s", name, exc)
+                errors.append(f"{name}: {exc}")
+
+        err_msg = "All LLM models failed. Errors:\n" + "\n".join(errors)
+        logger.error(err_msg)
+        raise RuntimeError(err_msg)
 
     tool_node = ToolNode(tools)  # Node 2: executes tool calls
 
